@@ -11,6 +11,7 @@ import 'package:cardgame/screens/dashboard/dashboard_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+
   if (kIsWeb) {
     await Firebase.initializeApp(
       options: FirebaseOptions(
