@@ -10,7 +10,7 @@ import 'package:cardgame/screens/dashboard/dashboard_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  //await Firebase.initializeApp();
+  
   if (kIsWeb) {
     await Firebase.initializeApp(
       options: FirebaseOptions(
@@ -20,6 +20,8 @@ void main() async {
         projectId: "playgame1-5a5f9",
       ),
     );
+  } else {
+    await Firebase.initializeApp();
   }
   runApp(
     MyApp(),
