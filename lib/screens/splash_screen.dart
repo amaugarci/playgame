@@ -10,6 +10,7 @@ import 'package:cardgame/resources/app_colors.dart';
 class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    print('==============');
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'cardgame',
