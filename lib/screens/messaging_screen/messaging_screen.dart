@@ -6,6 +6,7 @@ import 'package:cardgame/screens/messaging_screen/widgets/chat_bubble.dart';
 import 'package:cardgame/utility/firebase_constants.dart';
 import 'package:cardgame/utility/ui_constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:stream_chat/stream_chat.dart' as streamchat;
 
 class MessagingScreen extends StatefulWidget {
   final roomId;
@@ -16,34 +17,59 @@ class MessagingScreen extends StatefulWidget {
 
 class _MessagingScreenState extends State<MessagingScreen> {
   final _textMessageController = TextEditingController();
-
   final FirebaseAuth auth = FirebaseAuth.instance;
   late FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  void sendMessage(String message) {
-    var ref = _firestore.collection(kChatCollection);
-    var refUser = _firestore.collection(kUserCollection);
-    String uid = auth.currentUser!.uid;
-
-    refUser.doc(uid).get().then((result) {
-      ref.doc().set({
-        kChatRoomId: widget.roomId,
-        kChatStr: message,
-        kChatUserId: uid,
-        kChatUserName: result.data()![kUserName],
-        kChatDate: DateTime.now().toIso8601String().toString(),
-      });
-    });
-  }
+  late streamchat.Channel _channel;
+  late Stream<List<streamchat.Message>> messages;
+  bool flag = true;
 
   @override
   void initState() {
     super.initState();
     _firestore = FirebaseFirestore.instance;
+    initStreamChatting();
+  }
+
+  void initStreamChatting() async {
+    final client = streamchat.StreamChatClient('p5ryqwtue5vz',
+        logLevel: streamchat.Level.INFO);
+    await client.connectUser(
+      streamchat.User(
+        id: 'jamessmith',
+        name: 'JamesSmith',
+        image:
+            'https://getstream.io/random_png/?id=cool-shadow-7&amp;name=Cool+shadow',
+      ),
+      '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiamFtZXNzbWl0aCJ9.9p1f4HbDDtcQjHLXVxSiUTPM4luE-C_2c9D9Br8atmY''',
+    );
+    _channel = client.channel('messaging', id: 'cardgame');
+    await _channel.watch();
+    setState(() {
+      flag = false;
+    });
+  }
+
+  void sendMessage(String message) {
+    var refUser = _firestore.collection(kUserCollection);
+    String uid = auth.currentUser!.uid;
+    refUser.doc(uid).get().then((result) {
+      _channel.sendMessage(streamchat.Message(
+        text: message,
+        extraData: {
+          'roomId': widget.roomId,
+          'senderId': uid,
+          'senderName': result.data()![kUserName],
+        },
+      ));
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!flag) {
+      messages = _channel.state!.messagesStream;
+    }
+
     final textArea = Positioned.fill(
       child: Align(
         alignment: Alignment.center,
@@ -100,7 +126,6 @@ class _MessagingScreenState extends State<MessagingScreen> {
         shape: CircleBorder(),
       ),
     );
-
     final bottomTextArea = Container(
       color: kImperialRed.withOpacity(0.2),
       padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 10.0),
@@ -118,58 +143,59 @@ class _MessagingScreenState extends State<MessagingScreen> {
         title: Text("Chatting Room"),
       ),
       backgroundColor: kWhite,
-      body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            SizedBox.shrink(),
-            Expanded(
-              child: StreamBuilder<QuerySnapshot>(
-                stream: _firestore
-                    .collection(kChatCollection)
-                    //.where(kChatRoomId, isEqualTo: widget.roomId)
-                    .orderBy(kChatDate, descending: true)
-                    .snapshots(),
-                builder: (ctx, snapshot) {
-                  if (snapshot.data == null) {
-                    print(widget.roomId);
-                    return Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }
-
-                  if (snapshot.data!.docs.isEmpty)
-                    return Center(
-                      child: Text(
-                        'Send your first text in this Room',
-                        style: kTitleTextStyle,
-                      ),
-                    );
-
-                  List<Widget> widgets = [];
-                  List<DocumentSnapshot> ds = snapshot.data!.docs;
-
-                  for (var chatData in ds) {
-                    if (chatData[kRoomId] == widget.roomId) {
-                      widgets.add(ChatBubble(
-                        chatData: chatData,
-                      ));
-                    }
-                  }
-
-                  return ListView.builder(
-                    reverse: true,
-                    itemCount: widgets.length,
-                    itemBuilder: (ctx, index) {
-                      return widgets[index];
-                    },
-                  );
-                },
+      body: flag
+          ? Scaffold()
+          : SafeArea(
+              child: Column(
+                children: <Widget>[
+                  SizedBox.shrink(),
+                  Expanded(
+                    child: StreamBuilder(
+                      stream: messages,
+                      builder: (BuildContext ctx,
+                          AsyncSnapshot<List<streamchat.Message>?> snapshot) {
+                        if (snapshot.hasData && snapshot.data != null) {
+                          List<Widget> widgets = [];
+                          List<streamchat.Message> ds =
+                              snapshot.data!.reversed.toList();
+                          for (var chatData in ds) {
+                            if (chatData.extraData['roomId'] == widget.roomId) {
+                              widgets.add(ChatBubble(
+                                chatData: chatData,
+                              ));
+                            }
+                          }
+                          return ListView.builder(
+                            reverse: true,
+                            itemCount: widgets.length,
+                            itemBuilder: (ctx, index) {
+                              return widgets[index];
+                            },
+                          );
+                        } else if (snapshot.hasError) {
+                          return const Center(
+                            child: Text(
+                              'There was an error loading messages. Please see logs.',
+                            ),
+                          );
+                        }
+                        return Center(
+                          child: Text(
+                            'Send your first message in this Room',
+                            style: kTitleTextStyle,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  bottomTextArea,
+                ],
               ),
             ),
-            bottomTextArea,
-          ],
-        ),
-      ),
     );
   }
+}
+
+extension on streamchat.StreamChatClient {
+  String get uid => state.currentUser!.id;
 }

@@ -10,10 +10,12 @@ class RoomItemWidget extends StatelessWidget {
   RoomItemWidget({
     this.roomData,
     this.context,
+    this.visibility,
   });
 
   final context;
   final roomData;
+  final visibility;
   final firestore = FirebaseFirestore.instance;
   final FirebaseAuth auth = FirebaseAuth.instance;
   List<dynamic> joinMembers = [];
@@ -76,24 +78,27 @@ class RoomItemWidget extends StatelessWidget {
       style: kGeneralTextStyle.copyWith(fontSize: 15, color: kBlack),
     );
 
-    return Card(
-      color: Colors.white,
-      elevation: 5,
-      shape: shape,
-      margin: cardMargin,
-      child: InkWell(
-        onTap: () => enterRoom(context),
-        splashColor: kImperialRed.withAlpha(100),
-        child: Padding(
-          padding: contentPadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              roomNameText,
-              SizedBox(height: 20),
-              roomIdText,
-              //createdAtText,
-            ],
+    return Visibility(
+      visible: visibility,
+      child: Card(
+        color: Colors.white,
+        elevation: 5,
+        shape: shape,
+        margin: cardMargin,
+        child: InkWell(
+          onTap: () => enterRoom(context),
+          splashColor: kImperialRed.withAlpha(100),
+          child: Padding(
+            padding: contentPadding,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                roomNameText,
+                SizedBox(height: 20),
+                roomIdText,
+                //createdAtText,
+              ],
+            ),
           ),
         ),
       ),

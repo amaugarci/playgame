@@ -1,10 +1,10 @@
 // ignore_for_file: prefer_const_constructors_in_immutables, use_key_in_widget_constructors, prefer_const_constructors, dead_code, depend_on_referenced_packages
 
 import 'package:flutter/material.dart';
-import 'package:cardgame/utility/firebase_constants.dart';
 import 'package:cardgame/utility/ui_constants.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:stream_chat/stream_chat.dart';
 
 class ChatBubble extends StatelessWidget {
   ChatBubble({
@@ -12,7 +12,7 @@ class ChatBubble extends StatelessWidget {
   });
 
   final FirebaseAuth auth = FirebaseAuth.instance;
-  final dynamic chatData;
+  Message chatData;
 
   final borderRadius = 20.0;
 
@@ -20,7 +20,7 @@ class ChatBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     String uid = auth.currentUser!.uid;
     var chatContents = chatData;
-    bool isMe = (uid == chatContents[kChatUserId]);
+    bool isMe = (uid == chatContents.extraData['senderId']);
     final decoration = BoxDecoration(
       color: isMe ? kSteelBlue : kSteelBlue.withOpacity(0.08),
       borderRadius: BorderRadius.only(
@@ -37,19 +37,15 @@ class ChatBubble extends StatelessWidget {
       children: <Widget>[
         Text(
           isMe
-              ? DateFormat('hh:mm a')
-                  .format(DateTime.parse(chatContents[kChatDate]))
-              : chatContents[kChatUserName] +
-                  '   ' +
-                  DateFormat('hh:mm a')
-                      .format(DateTime.parse(chatContents[kChatDate])),
+              ? DateFormat('hh:mm a').format(chatContents.createdAt)
+              : '${chatContents.extraData['senderName']}   ${DateFormat('hh:mm a').format(chatContents.createdAt)}',
           style: kLightestTextStyle.copyWith(
             color: isMe ? kWhite : kBlack,
           ),
         ),
         SizedBox(height: 10),
         Text(
-          chatContents[kChatStr],
+          chatContents.text!,
           style: kLabelTextStyle.copyWith(
             color: isMe ? kWhite : kBlack,
           ),

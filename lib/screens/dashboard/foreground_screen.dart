@@ -83,11 +83,21 @@ class _ForegroundScreenState extends State<ForegroundScreen> {
 
         List<Widget> widgets = [];
         List<DocumentSnapshot> ds = snapshot.data!.docs;
-
         for (var room in ds) {
+          List<String> joinMembers = [];
+          for (var m in room[kJoinMembers]) {
+            joinMembers.add(m['name']);
+          }
+          var memberCount = joinMembers.length;
+
+          bool flag = false;
+          if (memberCount < 6) {
+            flag = true;
+          }
           widgets.add(RoomItemWidget(
             context: context,
             roomData: room,
+            visibility: flag,
           ));
         }
 

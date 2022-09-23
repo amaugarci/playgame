@@ -82,18 +82,11 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
         iconData: FontAwesomeIcons.napster);
 
     // ignore: deprecated_member_use
-    var createRoomButton = RaisedButton(
+    var createRoomButton = ElevatedButton(
       child: Text(
         'Create Room',
         style: kGeneralTextStyle,
       ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20.0),
-      ),
-      elevation: 10.0,
-      padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
-      color: kImperialRed,
-      splashColor: kWhite,
       onPressed: createNewRoom,
     );
 
