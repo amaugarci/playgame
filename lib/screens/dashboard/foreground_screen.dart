@@ -91,7 +91,7 @@ class _ForegroundScreenState extends State<ForegroundScreen> {
           var memberCount = joinMembers.length;
 
           bool flag = false;
-          if (memberCount < 4) {
+          if (memberCount < 2) {
             flag = true;
           }
           widgets.add(RoomItemWidget(
