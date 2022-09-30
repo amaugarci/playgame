@@ -47,9 +47,30 @@ class RoomItemWidget extends StatelessWidget {
       }
     });
 
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => GameReadyScreen(roomId: roomData[kRoomId]),
-    ));
+    Navigator.of(context)
+        .push(MaterialPageRoute(
+          builder: (context) => GameReadyScreen(roomId: roomData[kRoomId]),
+        ))
+        .then((_) async => {
+              joinMembers = [],
+              await ref
+                  .where(kRoomId, isEqualTo: roomData[kRoomId])
+                  .get()
+                  .then((event) async {
+                for (var doc in event.docs) {
+                  for (var member in doc.data()[kJoinMembers]) {
+                    if (member['uid'] != uid) {
+                      joinMembers.add(member);
+                    }
+                  }
+                  await ref.doc(roomData[kRoomId]).set({
+                    kJoinMembers: joinMembers,
+                    kRoomId: doc.data()[kRoomId],
+                    kRoomName: doc.data()[kRoomName]
+                  });
+                }
+              })
+            });
   }
 
   @override
