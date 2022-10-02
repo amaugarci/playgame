@@ -32,7 +32,7 @@ migrate_working_dir/
 .pub/
 /build/
 /android/app/google-services.json
-/ios/Runner/GoogleService-Info.plist
+/ios/GoogleService-Info.plist
 
 # Web related
 lib/generated_plugin_registrant.dart
