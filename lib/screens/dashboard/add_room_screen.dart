@@ -38,11 +38,12 @@ class _AddRoomScreenState extends State<AddRoomScreen> {
     String uid = auth.currentUser!.uid;
     String roomName = inputRoomName;
     List<dynamic> joinMember = [];
-    dynamic member = {'uid': uid, 'name': username};
-    joinMember.add(member);
+    // dynamic member = {'uid': uid, 'name': username};
+    // joinMember.add(member);
+    final roomid = UniqueKey().hashCode.toString();
     await ref
-        .doc(uid)
-        .set({kRoomId: uid, kRoomName: roomName, kJoinMembers: joinMember});
+        .doc(roomid)
+        .set({kRoomId: roomid, kRoomName: roomName, kJoinMembers: joinMember});
     // close the screen
     Navigator.pop(context);
   }

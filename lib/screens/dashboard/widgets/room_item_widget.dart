@@ -100,7 +100,8 @@ class RoomItemWidget extends StatelessWidget {
     );
 
     return Visibility(
-      visible: visibility,
+      visible: true,
+      // visible: visibility,
       child: Card(
         color: Colors.white,
         elevation: 5,

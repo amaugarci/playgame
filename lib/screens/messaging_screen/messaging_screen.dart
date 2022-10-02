@@ -181,7 +181,7 @@ class _MessagingScreenState extends State<MessagingScreen> {
                         }
                         return Center(
                           child: Text(
-                            'Send your first message in this Room',
+                            'Send the first message!',
                             style: kTitleTextStyle,
                           ),
                         );
